@@ -16,20 +16,12 @@ public static class EntityHelper
         PartOfSpeech = model.PartOfSpeech,
         Lemma = model.Lemma,
         CreatedAt = model.CreatedAt,
-        UpdatedAt = model.UpdatedAt
-    };
-    public static TermEntity ToEntity(this Term model, List<Term> translations) => new()
-    {
-        Id = model.Id,
-        UserId = model.UserId,
-        GlossaryId = model.GlossaryId,
-        LanguageId = model.LanguageId,
-        Text = model.Text,
-        Description = model.Description,
-        PartOfSpeech = model.PartOfSpeech,
-        Lemma = model.Lemma,
-        CreatedAt = model.CreatedAt,
         UpdatedAt = model.UpdatedAt,
-        Translations = translations.Select(x => x.ToEntity()).ToList()
     };
+
+    public static TermEntity WithTranslations(this TermEntity entity, IEnumerable<Term> translations)
+    {
+        entity.Translations = translations.Select(x => x.ToEntity()).ToList();
+        return entity;
+    }
 }

@@ -42,22 +42,22 @@ public partial class KookBotExtension : IHostedService
         switch (msg.Severity)
         {
             case LogSeverity.Critical:
-                _logger.Fatal("KaiHeiLa {Message:l}", msg.ToString());
+                _logger.Fatal("KOOK {Message:l}", msg.ToString());
                 break;
             case LogSeverity.Error:
-                _logger.Error("KaiHeiLa {Message:l}", msg.ToString());
+                _logger.Error("KOOK {Message:l}", msg.ToString());
                 break;
             case LogSeverity.Warning:
-                _logger.Warning("KaiHeiLa {Message:l}", msg.ToString());
+                _logger.Warning("KOOK {Message:l}", msg.ToString());
                 break;
             case LogSeverity.Info:
-                _logger.Information("KaiHeiLa {Message:l}", msg.ToString());
+                _logger.Information("KOOK {Message:l}", msg.ToString());
                 break;
             case LogSeverity.Verbose:
-                _logger.Debug("KaiHeiLa {Message:l}", msg.ToString());
+                _logger.Debug("KOOK {Message:l}", msg.ToString());
                 break;
             case LogSeverity.Debug:
-                _logger.Verbose("KaiHeiLa {Message:l}", msg.ToString());
+                _logger.Verbose("KOOK {Message:l}", msg.ToString());
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(LogSeverity));

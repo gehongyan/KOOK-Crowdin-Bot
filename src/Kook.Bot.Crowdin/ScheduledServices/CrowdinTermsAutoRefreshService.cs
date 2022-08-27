@@ -1,4 +1,5 @@
-﻿using Crowdin.Api;
+﻿using System.Diagnostics;
+using Crowdin.Api;
 using Crowdin.Api.Glossaries;
 using Kook.Bot.Crowdin.Configurations;
 using Kook.Bot.Crowdin.Data;
@@ -23,7 +24,7 @@ public class CrowdinTermsAutoRefreshService : ScheduledServiceBase
         CrowdinBotDbContext dbContext, 
         CrowdinConfigurations crowdinConfigurations,
         ITermService termRepository)
-        : base(TimeSpan.Zero, TimeSpan.FromMinutes(5), logger, nameof(CrowdinTermsAutoRefreshService), false)
+        : base(TimeSpan.FromSeconds(5), TimeSpan.FromMinutes(5), logger, nameof(CrowdinTermsAutoRefreshService), false)
     {
         _logger = logger;
         _crowdinApiClient = crowdinApiClient;
@@ -35,16 +36,24 @@ public class CrowdinTermsAutoRefreshService : ScheduledServiceBase
 
     protected override async Task ExecuteAsync()
     {
-        IAsyncEnumerable<Term> sourceTerms = ListAllTermsAsync(languageId: _crowdinConfigurations.SourceLanguageId);
-        List<IGrouping<Term, Term>> groups = new();
-        await foreach (Term sourceTerm in sourceTerms)
-        {
-            List<Term> translations = await ListAllTermsAsync(translationOfTermId: sourceTerm.Id)
-                .Where(x => x.LanguageId != _crowdinConfigurations.SourceLanguageId)
-                .ToListAsync();
-            groups.Add(new Grouping<Term, Term>(sourceTerm, translations));
-        }
-        await _termRepository.SyncTermsAsync(groups);
+        _logger.Information("Crowdin terms refreshing");
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        IEnumerable<Task<KeyValuePair<Term, IEnumerable<Term>>>> tasks =
+            (await ListAllTermsAsync(languageId: _crowdinConfigurations.SourceLanguageId)
+                .Select(async x => new KeyValuePair<Term, IEnumerable<Term>>(x,
+                    await ListAllTermsAsync(translationOfTermId: x.Id)
+                        .Where(y => y.LanguageId != _crowdinConfigurations.SourceLanguageId)
+                        .ToListAsync()))
+                .ToListAsync())
+            .Select(async x => await x);
+        KeyValuePair<Term, IEnumerable<Term>>[] results = await Task.WhenAll(tasks);
+        Dictionary<Term, IEnumerable<Term>> terms = results.ToDictionary(x => x.Key, x => x.Value);
+        stopwatch.Stop();
+        _logger.Information("{Count} terms found in {ElapsedMilliseconds}ms", terms.Count,
+            stopwatch.ElapsedMilliseconds);
+        stopwatch.Restart();
+        await _termRepository.SyncTermsAsync(terms);
+        _logger.Information("Update database in {ElapsedMilliseconds}ms", stopwatch.ElapsedMilliseconds);
     }
 
     private async IAsyncEnumerable<Term> ListAllTermsAsync(string languageId = null, int? translationOfTermId = null)
@@ -56,12 +65,12 @@ public class CrowdinTermsAutoRefreshService : ScheduledServiceBase
             await _apiSemaphore.WaitAsync();
             try
             {
-                _logger.Information("Listing terms in {LanguageId} for {TranslationOfTermId}, Limit: {Limit}, Offset: {Offset}", 
+                _logger.Verbose("Listing terms in {LanguageId} for {TranslationOfTermId}, Limit: {Limit}, Offset: {Offset}", 
                     languageId, translationOfTermId, pagination.Limit, pagination.Offset);
                 responseList = await _crowdinApiClient.Glossaries
                     .ListTerms(_crowdinConfigurations.GlossaryId, languageId: languageId,
                         translationOfTermId: translationOfTermId, limit: pagination.Limit, offset: pagination.Offset);
-                _logger.Information("Listed terms in {LanguageId} for {TranslationOfTermId}, Limit: {Limit}, Offset: {Offset}, Count: {Count}", 
+                _logger.Verbose("Listed terms in {LanguageId} for {TranslationOfTermId}, Limit: {Limit}, Offset: {Offset}, Count: {Count}", 
                     languageId, translationOfTermId, pagination.Limit, pagination.Offset, responseList.Data.Count);
                 pagination = responseList.Pagination;
                 pagination.Offset += pagination.Limit;

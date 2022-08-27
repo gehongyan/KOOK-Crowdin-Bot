@@ -51,6 +51,9 @@ internal static class Program
                 loggerConfiguration
                     .ReadFrom.Configuration(hostingContext.Configuration)
                     .Enrich.FromLogContext()
+#if DEBUG
+                    .MinimumLevel.Debug()
+#endif
                     .WriteTo.Console();
             });
         return hostBuilder;
@@ -89,7 +92,9 @@ internal static class Program
             .AddSingleton(_ => new KookSocketClient(new KookSocketConfig()
             {
                 AlwaysDownloadUsers = true,
+#if DEBUG
                 LogLevel = LogSeverity.Debug
+#endif
             }))
             .AddSingleton<KookBotExtension>()
             .AddHostedService(p => p.GetRequiredService<KookBotExtension>())

@@ -2,9 +2,9 @@
 
 public abstract class CardMessageBase
 {
-    public virtual List<ICardBuilder> CardBuilders { get; set; }
+    protected abstract IEnumerable<ICardBuilder> CardBuilders { get; }
     
-    public virtual List<ICard> Cards => Build();
+    public virtual IEnumerable<ICard> Cards => Build();
 
-    public virtual List<ICard> Build() => CardBuilders.Select(x => x.Build()).ToList();
+    protected virtual List<ICard> Build() => CardBuilders.Select(x => x.Build()).ToList();
 }
