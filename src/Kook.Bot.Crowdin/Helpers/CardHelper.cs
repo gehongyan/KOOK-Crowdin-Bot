@@ -1,4 +1,8 @@
-﻿namespace Kook.Bot.Crowdin.Helpers;
+﻿using Crowdin.Api.Screenshots;
+using Kook.Bot.Crowdin.Cards;
+using Kook.Commands;
+
+namespace Kook.Bot.Crowdin.Helpers;
 
 public static class CardHelper
 {
@@ -37,5 +41,50 @@ public static class CardHelper
         return builder;
     }
 
+    public static string CrowdinLogoUrl => "https://img.kookapp.cn/assets/2022-08/M1dcdZvFb80go0go.png";
+    public static string FooterText => $" KOOK Crowdin {Format.Bold("·")} {DateTimeOffset.Now:yyyy'/'M'/'dd HH':'mm':'ss}";
     public static Color CrowdinGreen => new(135, 174, 55);
+
+    public static IEnumerable<IModuleBuilder> FooterModules => new IModuleBuilder[]
+    {
+        new DividerModuleBuilder(),
+        new ContextModuleBuilder()
+            .AddElement<ImageElementBuilder>(x => x.Source = CrowdinLogoUrl)
+            .AddElement<KMarkdownElementBuilder>(x => x.WithContent(FooterText))
+    };
+    
+    public static CardBuilder GetReferenceStyleFooterCard(this CardBuilder styleReference)
+    {
+        CardBuilder cardBuilder = new CardBuilder()
+            .WithSize(styleReference.Size)
+            .WithTheme(styleReference.Theme);
+        if (styleReference.Color.HasValue)
+            cardBuilder.Color = styleReference.Color.Value;
+        return cardBuilder
+            .AddModule<ContextModuleBuilder>(x => x
+                .AddElement<ImageElementBuilder>(y => y.Source = CrowdinLogoUrl)
+                .AddElement<KMarkdownElementBuilder>(y => y
+                    .WithContent(FooterText)));
+    }
+
+    public static async Task<(Guid messageId, DateTimeOffset messageTimestamp)> ReplyInfoCardAsync(
+        this IMessage message, IEnumerable<string> content, string title = null, IEnumerable<string> remark = null, bool isQuote = false, bool showFooter = true)
+        => await message.Channel.SendCardMessageAsync(new SimpleInfoCard(content, title, remark, showFooter: showFooter).Cards, 
+                quote: isQuote ? new Quote(message.Id) : null)
+            .ConfigureAwait(false);
+    public static async Task<(Guid messageId, DateTimeOffset messageTimestamp)> ReplyInfoCardAsync(
+        this IMessage message, string content, string title = null, string remark = null, bool isQuote = false, bool showFooter = true)
+        => await message.Channel.SendCardMessageAsync(new SimpleInfoCard(content, title, remark, showFooter: showFooter).Cards, 
+                quote: isQuote ? new Quote(message.Id) : null)
+            .ConfigureAwait(false);
+    public static async Task<(Guid messageId, DateTimeOffset messageTimestamp)> ReplyErrorCardAsync(
+        this IMessage message, IEnumerable<string> content, string title = null, IEnumerable<string> remark = null, bool isQuote = false, bool showFooter = true)
+        => await message.Channel.SendCardMessageAsync(new SimpleErrorCard(content, title, remark, showFooter: showFooter).Cards, 
+                quote: isQuote ? new Quote(message.Id) : null)
+            .ConfigureAwait(false);
+    public static async Task<(Guid messageId, DateTimeOffset messageTimestamp)> ReplyErrorCardAsync(
+        this IMessage message, string content, string title = null, string remark = null, bool isQuote = false, bool showFooter = true)
+        => await message.Channel.SendCardMessageAsync(new SimpleErrorCard(content, title, remark, showFooter: showFooter).Cards, 
+                quote: isQuote ? new Quote(message.Id) : null)
+            .ConfigureAwait(false);
 }

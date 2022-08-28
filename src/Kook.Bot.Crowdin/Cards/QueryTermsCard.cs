@@ -36,6 +36,6 @@ public class QueryTermsCard : CardMessageBase
             return builder;
         });
         cardBuilder.AddModules(moduleBuilders);
-        return new[] {cardBuilder};
+        return new[] {cardBuilder, cardBuilder.GetReferenceStyleFooterCard()};
     }
 }

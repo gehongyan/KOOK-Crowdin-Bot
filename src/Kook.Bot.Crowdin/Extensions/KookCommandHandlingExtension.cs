@@ -1,6 +1,8 @@
 using System.Reflection;
+using Kook.Bot.Crowdin.Cards;
 using Kook.Commands;
 using Kook.WebSocket;
+using Serilog;
 
 namespace Kook.Bot.Crowdin.Extensions
 {
@@ -9,15 +11,18 @@ namespace Kook.Bot.Crowdin.Extensions
         private readonly IServiceProvider _services;
         private readonly CommandService _commandService;
         private readonly KookSocketClient _kookSocketClient;
+        private readonly ILogger _logger;
 
         public KookCommandHandlingExtension(
             IServiceProvider services, 
             CommandService commandService, 
-            KookSocketClient kookSocketClient)
+            KookSocketClient kookSocketClient,
+            ILogger logger)
         {
             _services = services;
             _commandService = commandService;
             _kookSocketClient = kookSocketClient;
+            _logger = logger;
 
             _commandService.CommandExecuted += CommandExecutedAsync;
             _kookSocketClient.MessageReceived += MessageReceivedAsync;
@@ -40,9 +45,13 @@ namespace Kook.Bot.Crowdin.Extensions
 
         public async Task CommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
         {
+            _logger.Information("{Username} executed {CommandName} {Result}", 
+                context.User.Username, 
+                context.Message.Content,
+                result.IsSuccess ? "succeeded" : "failed");
             if (!command.IsSpecified) return;
             if (result.IsSuccess) return;
-            await context.Channel.SendTextMessageAsync($"error: {result}");
+            await context.Message.ReplyCardsAsync(new SimpleErrorCard(result.ErrorReason).Cards, isQuote: true);
         }
     }
 }

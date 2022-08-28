@@ -114,7 +114,7 @@ internal static class Program
                 .EnableSensitiveDataLogging()
 #endif
                 .UseSqlite(configurationRoot.GetConnectionString("CrowdinBotDbConnection"),
-                    builder => builder.MigrationsAssembly("Kook.Bot.Crowdin.Migrations")))
+                    builder => builder.MigrationsAssembly("Kook.Bot.Crowdin.Migrations")), ServiceLifetime.Transient)
             
             .AddScoped<ITermService, TermRepository>()
 

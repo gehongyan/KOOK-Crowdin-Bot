@@ -30,6 +30,7 @@ public sealed class ListSingleLanguageTermsCard : CardMessageBase
         List<string> innerTexts = new(){Format.Bold(sourceLanguageId), Format.Bold(sourceLanguageId)};
         innerTexts.AddRange(terms.SelectMany(x => new List<string>
             {x.Text, x.Translations.Single(y => y.LanguageId == targetLanguageId).Text}));
+        
         List<ICardBuilder> cardBuilders = innerTexts
             .Chunk(50)
             .Select((chunk, index) =>
@@ -42,6 +43,7 @@ public sealed class ListSingleLanguageTermsCard : CardMessageBase
                         .AddFields(chunk.Select(z => new KMarkdownElementBuilder().WithContent(z)))));
                 return (ICardBuilder) cardBuilder;
             }).ToList();
+        cardBuilders.Add((cardBuilders.First() as CardBuilder).GetReferenceStyleFooterCard());
         return cardBuilders;
     }
 

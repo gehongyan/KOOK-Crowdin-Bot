@@ -13,8 +13,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kook.Bot.Crowdin.Modules;
 
-[Group("glossary")]
-[Alias("glossaries", "term", "terms", "词汇", "词汇表", "术语", "术语表")]
+[Group("term")]
+[Alias("terms", "glossary", "glossaries", "词汇", "词汇表", "术语", "术语表")]
 public class GlossaryModule : ModuleBase<SocketCommandContext>
 {
     private readonly CrowdinApiClient _crowdinApiClient;
@@ -38,11 +38,11 @@ public class GlossaryModule : ModuleBase<SocketCommandContext>
     public async Task ForceRefresh()
     {
         _crowdinTermsAutoRefreshService.ExecuteImmediately();
-        await ReplyTextAsync("已手动触发词汇表刷新任务");
+        await Context.Message.ReplyInfoCardAsync("已手动触发词汇表刷新任务", isQuote: true);
     }
     
-    [Command("list")]
-    [Alias("列表")]
+    [Command("export")]
+    [Alias("all", "list", "excel", "列表", "全部", "导出", "表格", "Excel", "excel")]
     public async Task ListAll()
     {
         IReadOnlyCollection<TermEntity> terms = await _termRepository.ListTermsAsync();
@@ -54,6 +54,13 @@ public class GlossaryModule : ModuleBase<SocketCommandContext>
     [Alias("lang", "语言")]
     public async Task ListSingleLanguage(string targetLanguageId)
     {
+        if (!_crowdinConfigurations.TargetLanguageIds.Contains(targetLanguageId))
+        {
+            await Context.Message.ReplyErrorCardAsync($"目标语言 {targetLanguageId} 不受支持\n支持的目标语言有：\n" +
+                $"> {_crowdinConfigurations.TargetLanguageIds.Aggregate((a, b) => $"{a}\n{b}")}", isQuote: true);
+            return;
+        }
+        
         IReadOnlyCollection<TermEntity> entities = await _termRepository.ListTermsAsync();
         IEnumerable<TermEntity> termsWithTargetLanguage = entities.Where(x => x.Translations
             .Any(y => y.LanguageId == targetLanguageId)).ToList();
@@ -66,18 +73,18 @@ public class GlossaryModule : ModuleBase<SocketCommandContext>
             return;
         }
 
-        await ReplyKMarkdownAsync($"目标语言 {targetLanguageId} 无词汇记录");
+        await Context.Message.ReplyErrorCardAsync($"目标语言 {targetLanguageId} 无词汇记录", isQuote: true);
     }
 
-    [Command("query")]
-    [Alias("search", "find", "查询", "查找", "搜索")]
+    [Command("search")]
+    [Alias("query", "find", "查询", "查找", "搜索")]
     public async Task QueryTerms([Remainder] string keyword)
     {
         IReadOnlyCollection<TermEntity> entities = await _termRepository.ListTermsAsync();
         IEnumerable<TermEntity> terms = entities
             .Where(x => x.Text.Contains(keyword)
                         || x.Translations.Any(y => y.Text.Contains(keyword)))
-            .OrderByDescending(x =>
+            .OrderBy(x =>
             {
                 IEnumerable<TermEntity> translations = x.Translations
                     .Where(y => y.Text.Contains(keyword))
@@ -94,7 +101,7 @@ public class GlossaryModule : ModuleBase<SocketCommandContext>
             await ReplyCardsAsync(cards, isQuote: true);
             return;
         }
-        await ReplyKMarkdownAsync($"关键字 {keyword} 无匹配结果");
+        await Context.Message.ReplyErrorCardAsync($"关键字 {keyword} 无匹配结果");
     }
     
 }
