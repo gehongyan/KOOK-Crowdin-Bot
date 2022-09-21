@@ -1,6 +1,4 @@
-﻿using Crowdin.Api.Screenshots;
-using Kook.Bot.Crowdin.Cards;
-using Kook.Commands;
+﻿using Kook.Bot.Crowdin.Cards;
 
 namespace Kook.Bot.Crowdin.Helpers;
 
@@ -67,24 +65,24 @@ public static class CardHelper
                     .WithContent(FooterText)));
     }
 
-    public static async Task<(Guid messageId, DateTimeOffset messageTimestamp)> ReplyInfoCardAsync(
+    public static async Task<Cacheable<IUserMessage, Guid>> ReplyInfoCardAsync(
         this IMessage message, IEnumerable<string> content, string title = null, IEnumerable<string> remark = null, bool isQuote = false, bool showFooter = true)
-        => await message.Channel.SendCardMessageAsync(new SimpleInfoCard(content, title, remark, showFooter: showFooter).Cards, 
+        => await message.Channel.SendCardsAsync(new SimpleInfoCard(content, title, remark, showFooter: showFooter).Cards, 
                 quote: isQuote ? new Quote(message.Id) : null)
             .ConfigureAwait(false);
-    public static async Task<(Guid messageId, DateTimeOffset messageTimestamp)> ReplyInfoCardAsync(
+    public static async Task<Cacheable<IUserMessage, Guid>> ReplyInfoCardAsync(
         this IMessage message, string content, string title = null, string remark = null, bool isQuote = false, bool showFooter = true)
-        => await message.Channel.SendCardMessageAsync(new SimpleInfoCard(content, title, remark, showFooter: showFooter).Cards, 
+        => await message.Channel.SendCardsAsync(new SimpleInfoCard(content, title, remark, showFooter: showFooter).Cards, 
                 quote: isQuote ? new Quote(message.Id) : null)
             .ConfigureAwait(false);
-    public static async Task<(Guid messageId, DateTimeOffset messageTimestamp)> ReplyErrorCardAsync(
+    public static async Task<Cacheable<IUserMessage, Guid>> ReplyErrorCardAsync(
         this IMessage message, IEnumerable<string> content, string title = null, IEnumerable<string> remark = null, bool isQuote = false, bool showFooter = true)
-        => await message.Channel.SendCardMessageAsync(new SimpleErrorCard(content, title, remark, showFooter: showFooter).Cards, 
+        => await message.Channel.SendCardsAsync(new SimpleErrorCard(content, title, remark, showFooter: showFooter).Cards, 
                 quote: isQuote ? new Quote(message.Id) : null)
             .ConfigureAwait(false);
-    public static async Task<(Guid messageId, DateTimeOffset messageTimestamp)> ReplyErrorCardAsync(
+    public static async Task<Cacheable<IUserMessage, Guid>> ReplyErrorCardAsync(
         this IMessage message, string content, string title = null, string remark = null, bool isQuote = false, bool showFooter = true)
-        => await message.Channel.SendCardMessageAsync(new SimpleErrorCard(content, title, remark, showFooter: showFooter).Cards, 
+        => await message.Channel.SendCardsAsync(new SimpleErrorCard(content, title, remark, showFooter: showFooter).Cards, 
                 quote: isQuote ? new Quote(message.Id) : null)
             .ConfigureAwait(false);
 }

@@ -10,4 +10,6 @@ public class KookConfigurations : IConfigurations
     ///     KOOK 接口密钥
     /// </summary>
     public string Token { get; set; }
+
+    public ulong LogChannelId { get; set; }
 }

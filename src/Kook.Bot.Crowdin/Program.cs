@@ -1,19 +1,15 @@
-﻿using System.Reflection;
-using Crowdin.Api;
-using Kook.Bot.Crowdin.Attributes;
+﻿using Crowdin.Api;
 using Kook.Bot.Crowdin.Configurations;
 using Kook.Bot.Crowdin.Data;
 using Kook.Bot.Crowdin.Data.Repositories;
 using Kook.Bot.Crowdin.Data.Services;
 using Kook.Bot.Crowdin.Extensions;
-using Kook.Bot.Crowdin.Interfaces;
 using Kook.Bot.Crowdin.ScheduledServices;
 using Kook.Commands;
 using Kook.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
@@ -55,6 +51,7 @@ internal static class Program
                     .MinimumLevel.Debug()
 #endif
                     .WriteTo.Console();
+                    // .WriteTo.KookChannelSink(services);
             });
         return hostBuilder;
     }
@@ -114,9 +111,9 @@ internal static class Program
                 .EnableSensitiveDataLogging()
 #endif
                 .UseSqlite(configurationRoot.GetConnectionString("CrowdinBotDbConnection"),
-                    builder => builder.MigrationsAssembly("Kook.Bot.Crowdin.Migrations")), ServiceLifetime.Transient)
+                    builder => builder.MigrationsAssembly("Kook.Bot.Crowdin.Migrations")), ServiceLifetime.Singleton)
             
-            .AddScoped<ITermService, TermRepository>()
+            .AddSingleton<ITermService, TermRepository>()
 
             .AddHttpClient();
         

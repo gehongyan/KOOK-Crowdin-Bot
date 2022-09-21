@@ -1,5 +1,4 @@
 ﻿using Kook.Bot.Crowdin.Cards;
-using Kook.Bot.Crowdin.Helpers;
 using Kook.Commands;
 
 namespace Kook.Bot.Crowdin.Modules;
@@ -30,7 +29,7 @@ public class HelpModule : ModuleBase<SocketCommandContext>
         if (targetMessage is not null)
             await targetMessage.ModifyAsync(x => x.Cards = cards.Select(y => (Card) y).ToList());
         else
-            await Context.Channel.SendCardMessageAsync(cards.Select(y => (Card) y).ToList(), 
+            await Context.Channel.SendCardsAsync(cards.Select(y => (Card) y).ToList(), 
                 quote: quote ? new Quote(Context.Message.Id) : null);
     }
 }

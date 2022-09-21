@@ -1,7 +1,4 @@
 ﻿using Crowdin.Api;
-using Crowdin.Api.Glossaries;
-using Crowdin.Api.ProjectsGroups;
-using Crowdin.Api.Users;
 using Kook.Bot.Crowdin.Cards;
 using Kook.Bot.Crowdin.Configurations;
 using Kook.Bot.Crowdin.Data.Models;
@@ -9,7 +6,6 @@ using Kook.Bot.Crowdin.Data.Services;
 using Kook.Bot.Crowdin.Helpers;
 using Kook.Bot.Crowdin.ScheduledServices;
 using Kook.Commands;
-using Microsoft.EntityFrameworkCore;
 
 namespace Kook.Bot.Crowdin.Modules;
 
@@ -38,7 +34,7 @@ public class GlossaryModule : ModuleBase<SocketCommandContext>
     public async Task ForceRefresh()
     {
         _crowdinTermsAutoRefreshService.ExecuteImmediately();
-        await Context.Message.ReplyInfoCardAsync("已手动触发词汇表刷新任务", isQuote: true);
+        Cacheable<IUserMessage,Guid> replyInfoCardAsync = await Context.Message.ReplyInfoCardAsync("已手动触发词汇表刷新任务", isQuote: true);
     }
     
     [Command("export")]

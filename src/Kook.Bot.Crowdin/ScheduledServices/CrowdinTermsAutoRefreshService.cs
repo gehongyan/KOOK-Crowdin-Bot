@@ -2,10 +2,7 @@
 using Crowdin.Api;
 using Crowdin.Api.Glossaries;
 using Kook.Bot.Crowdin.Configurations;
-using Kook.Bot.Crowdin.Data;
-using Kook.Bot.Crowdin.Data.Models;
 using Kook.Bot.Crowdin.Data.Services;
-using Kook.Bot.Crowdin.Helpers;
 using Serilog;
 
 namespace Kook.Bot.Crowdin.ScheduledServices;
@@ -14,21 +11,18 @@ public class CrowdinTermsAutoRefreshService : ScheduledServiceBase
 {
     private readonly ILogger _logger;
     private readonly CrowdinApiClient _crowdinApiClient;
-    private readonly CrowdinBotDbContext _dbContext;
     private readonly CrowdinConfigurations _crowdinConfigurations;
     private readonly ITermService _termRepository;
     private readonly SemaphoreSlim _apiSemaphore;
 
     public CrowdinTermsAutoRefreshService(ILogger logger, 
         CrowdinApiClient crowdinApiClient, 
-        CrowdinBotDbContext dbContext, 
         CrowdinConfigurations crowdinConfigurations,
         ITermService termRepository)
         : base(TimeSpan.FromSeconds(5), TimeSpan.FromMinutes(5), logger, nameof(CrowdinTermsAutoRefreshService), false)
     {
         _logger = logger;
         _crowdinApiClient = crowdinApiClient;
-        _dbContext = dbContext;
         _crowdinConfigurations = crowdinConfigurations;
         _termRepository = termRepository;
         _apiSemaphore = new SemaphoreSlim(10);

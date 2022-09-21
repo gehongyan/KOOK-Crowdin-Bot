@@ -43,13 +43,13 @@ namespace Kook.Bot.Crowdin.Extensions
             await _commandService.ExecuteAsync(context, argPos, _services);
         }
 
-        public async Task CommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
+        public async Task CommandExecutedAsync(CommandInfo command, ICommandContext context, IResult result)
         {
             _logger.Information("{Username} executed {CommandName} {Result}", 
                 context.User.Username, 
                 context.Message.Content,
                 result.IsSuccess ? "succeeded" : "failed");
-            if (!command.IsSpecified) return;
+            if (command is null) return;
             if (result.IsSuccess) return;
             await context.Message.ReplyCardsAsync(new SimpleErrorCard(result.ErrorReason).Cards, isQuote: true);
         }
