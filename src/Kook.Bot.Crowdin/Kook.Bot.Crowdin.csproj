@@ -9,7 +9,7 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="Crowdin.Api" Version="2.9.0" />
+        <PackageReference Include="Crowdin.Api" Version="2.9.1" />
         <PackageReference Include="EPPlus" Version="6.0.7" />
         <PackageReference Include="Kook.Net" Version="0.0.41-alpha" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.9">
