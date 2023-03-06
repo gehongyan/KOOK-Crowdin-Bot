@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Crowdin.Api" Version="2.10.0" />
+      <PackageReference Include="Crowdin.Api" Version="2.12.0" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.1">
       <PackageReference Include="EfCore.GenericServices" Version="5.2.0" />
         <PrivateAssets>all</PrivateAssets>
